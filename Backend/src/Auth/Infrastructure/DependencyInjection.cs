@@ -1,7 +1,9 @@
 ﻿using Auth.Data;
+using Auth.Infrastructure.Aws;
 using Auth.Infrastructure.Cache;
 using Auth.Infrastructure.ExceptionHandlers;
 using Auth.Infrastructure.HealthChecks;
+using Auth.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +12,7 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Amazon.CognitoIdentityProvider;
 
 namespace Auth.Infrastructure
 {
@@ -40,6 +43,8 @@ namespace Auth.Infrastructure
                         errorCodesToAdd: null);
                 }));
 
+            services.AddSingleton<UserMapper>();
+
             // CONFIGURE OPENTELEMETRY
             var serviceName = configuration["OTEL_SERVICE_NAME"] ?? "YourAppName";
 
@@ -59,9 +64,16 @@ namespace Auth.Infrastructure
             // EXCEPTION HANDLING
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
-            
+
             // CACHING
+            services.AddMemoryCache();
             services.AddHostedService<CacheMaintenanceWorker>();
+
+            // Add other infrastructure services as needed (e.g., logging, AWS services, etc.)
+            //services.AddAWSService(); // Add AWS services to the container
+            services.AddSingleton<AmazonCognitoIdentityProviderClient>(sp=>
+                sp.GetRequiredService<CognitoClientFactory>().CreateClient()
+            );
 
             return services;
         }

@@ -1,6 +1,7 @@
 using Auth.Data;
 using Auth.Infrastructure.JsonConverters;
 using Auth.Infrastructure.Mappers;
+using Auth.Infrastructure;
 using Auth.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +12,13 @@ builder.Services.AddHealthChecks();
 
 //builder.Services.AddDbContext<AppDBContext>(options =>
 //    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddInfrastructure(builder.Configuration);
 //App Services
-builder.Services.AddMemoryCache();
+//builder.Services.AddMemoryCache();
 builder.Services.AddScoped<RegistrationService>();
 builder.Services.AddSingleton<UserMapper>();
+
+//builder.Services.AddAWSService(); // Add AWS services to the container
 
 builder.Services.AddControllers()
     .AddJsonOptions(
